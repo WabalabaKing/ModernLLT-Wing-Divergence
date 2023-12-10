@@ -13,12 +13,19 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
     Ar = (Croot+Ctip)*b
     #################Definition of Airfoil and Flow
 
-    AoA = AoA/360*2*np.pi
+    AoA = (AoA)/360*2*np.pi
 
-    ui =np.array( [np.cos(AoA),0,np.sin(AoA)])
+    ui =np.array( [np.cos(AoA),0,-1*np.cos(sweep)*np.sin(AoA)])
     ui = ui/np.linalg.norm(ui)
-    un = np.array( [-1*np.sin(AoA),0,np.cos(AoA)])
+    un = np.array( [np.sin(AoA),0,np.cos(sweep)*np.cos(AoA)])
     un = un/np.linalg.norm(un)
+    
+    #ae = np.arctan(np.tan(AoA)/np.cos(sweep))
+    uai = np.array( [np.cos(sweep),np.sin(sweep),0])
+    #uni = np.array( [np.sin(AoA)*np.cos(sweep),0,np.cos(sweep)*np.cos(AoA)])
+    uni = np.array([0,0,1])
+    uai=uai/np.linalg.norm(uai)
+    uni = uni/np.linalg.norm(uni)
     #####################Geometry discretization###########
 
     LETip = np.array([b*np.tan(sweep),b,b*np.tan(Dihedral)])
@@ -63,11 +70,12 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
                              np.cross(ui,ri2j)/(ri2jn*(ri2jn-np.dot(ui,ri2j)))- \
                              np.cross(ui,ri1j)/(ri1jn*(ri1jn-np.dot(ui,ri1j))) )  
                 VJ=VJ+temp*G[i]
-            coeffs =2*np.cross((VJ+ui),dl)
-            coeffL = 2*np.linalg.norm(coeffs)*G[j]
+            coeffs =np.cross((VJ+ui),dl)
+            coeffL = 2* np.linalg.norm(coeffs)*G[j]
            # rhs = Cla*np.dot(np.arctan(ui+VJ),np.array([np.sin(AoA),0,np.cos(AoA)]))\
            #     /np.dot(np.arctan(ui+VJ),np.array([np.cos(AoA),0,-1*np.sin(AoA)]))
-            ai = np.arctan2(np.dot(ui+VJ,np.array([np.sin(AoA),0,np.cos(AoA)])),np.dot(ui+VJ,np.array([np.cos(AoA),0,-1*np.sin(AoA)])))
+            ai = np.arctan2(np.dot(ui+VJ,uni),\
+                            np.dot(ui+VJ,uai))
             coeff[j] = coeffL-ai*Cla
         return coeff
 
