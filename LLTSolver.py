@@ -14,18 +14,13 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
     #################Definition of Airfoil and Flow
 
     AoA = (AoA)/360*2*np.pi
-
     ui =np.array( [np.cos(AoA),0,-1*np.cos(sweep)*np.sin(AoA)])
     ui = ui/np.linalg.norm(ui)
     un = np.array( [np.sin(AoA),0,np.cos(sweep)*np.cos(AoA)])
     un = un/np.linalg.norm(un)
     
     #ae = np.arctan(np.tan(AoA)/np.cos(sweep))
-    uai = np.array( [np.cos(sweep),np.sin(sweep),0])
-    #uni = np.array( [np.sin(AoA)*np.cos(sweep),0,np.cos(sweep)*np.cos(AoA)])
-    uni = np.array([0,0,1])
-    uai=uai/np.linalg.norm(uai)
-    uni = uni/np.linalg.norm(uni)
+
     #####################Geometry discretization###########
 
     LETip = np.array([b*np.tan(sweep),b,b*np.tan(Dihedral)])
@@ -51,6 +46,10 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
             CPj = np.array([(cPX[j]+cPX[j+1])/2,(cPY[j]+cPY[j+1])/2,(cPZ[j]+cPZ[j+1])/2])
             r0 = np.array([cPX[j+1],cPY[j+1],cPZ[j+1]])-np.array([cPX[j],cPY[j],cPZ[j]]);
             dl = r0/np.linalg.norm(r0)
+            uai = np.array( [np.cos(sweep),np.sin(sweep),0])
+            uni = np.array([0,0,1])
+            uai=uai/np.linalg.norm(uai)
+            uni = uni/np.linalg.norm(uni)
             for i in range(2*N):
                
                 ri2j = CPj- np.array([cPX[i+1],cPY[i+1],cPZ[i+1]])
@@ -85,11 +84,13 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
 
     #Solve for CL
     CF=np.zeros(3)
+    Cli = np.zeros(2*N)
     for i in range(2*N):
         CPi = np.array([(cPX[i]+cPX[i+1])/2,(cPY[i]+cPY[i+1])/2,(cPZ[i]+cPZ[i+1])/2])
         r0 = np.array([cPX[i+1],cPY[i+1],cPZ[i+1]])-np.array([cPX[i],cPY[i],cPZ[i]]);
         dl = r0/np.linalg.norm(r0)
         temp=0
+        temp2 = 0
         for j in range(2*N):
             rj2i = CPi- np.array([cPX[j+1],cPY[j+1],cPZ[j+1]])
             rj1i = CPi- np.array([cPX[j],cPY[j],cPZ[j]])
@@ -106,9 +107,12 @@ def LLTSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA):
                          np.cross(ui,rj2i)/(rj2in*(rj2in-np.dot(ui,rj2i)))- \
                          np.cross(ui,rj1i)/(rj1in*(rj1in-np.dot(ui,rj1i))) )
             temp = temp+Gamma[i]*Gamma[j]*vji
+            temp2 =temp2+ Gamma[i]*Gamma[j]*vji
+        
         CF =CF+ np.cross((Gamma[i]*ui+temp),dl)*(cib[i]*(cPY[i+1]-cPY[i]))/Ar
+        Cli[i] =  np.linalg.norm(2*np.dot(np.cross((Gamma[i]*ui+temp),dl)*(cib[i]*(cPY[i+1]-cPY[i]))/Ar,un)*un)
     CF=CF*2
     CL = np.linalg.norm(np.dot(CF,un)*un)
     CDi = np.linalg.norm(np.dot(CF,ui)*ui)
     print(CL)
-    return [CL,CDi]
+    return cPY, Cli,CL,CDi,Ar
