@@ -139,28 +139,32 @@ import WingDivergenceSolver
 # Dihedral = 0  #degree
 # AoA = 2
 # Cla = 2*np.pi*np.cos(sweep*np.pi/180)
-# Orders = [1,2,3,4,5,6,7,8]
-# qdhis = np.zeros(8)
+# Orders = [1,2,3,4,5,6,7]
+# qdhis = np.zeros(7)
 # GJ = 10
-# EI = 1000
-# e = 0.1
+# EI = 110
+# e = 0.2
 # lam = sweep*np.pi/180
 # RigidQD = -EI*GJ/(GJ*np.cos(lam)**2*np.sin(lam)**2*b-EI*e*np.cos(lam)**3)
-# RigidQD = RigidQD*np.ones(8)
-# for i in range(8):
+# RigidQD = RigidQD*np.ones(7)
+# for i in range(7):
 #     Order = Orders[i]
     
 #     qd = WingDivergenceSolver.WingDivergenceSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA,Order,GJ,EI,e)
 #     qdhis[i] = qd
     
-# plt.plot(Orders,qdhis,label='R-R Wing Divergence Prediction')
-# plt.scatter(Orders,RigidQD,label='Theoretical Value of Rigid Wing')
-# plt.xlabel('Order of R-R Shape Function')
-# plt.ylabel('$q_d$')
-# plt.ylim([0,300])
+# plt.rcParams["figure.figsize"] = (6,4)
+# plt.figure(dpi=150)
+# plt.plot(Orders,qdhis,'k-',label='Modern LLT R-R ',alpha=0.8,markersize=8,linewidth=1.2,marker='x')
+# plt.scatter(Orders,RigidQD,label='Rigid Wing',marker='s',color='red',linewidth=2)
+# plt.ylabel(r'$q_{D}$',fontsize=15)
+# plt.xlabel(r'R-R Orders',fontsize=15)
 # plt.legend(loc="upper left")
-# plt.title("Wing Divergence Validation Against Rigid Wing")
+# plt.grid(which='major',linewidth=1,color='black',alpha=0.4)
+# plt.grid(which='minor',linewidth=0.4,alpha=0.4)
+# plt.minorticks_on()
 # plt.show()
+
 ###############################################################################
 N = 10     #number of vortex
 sweeps = -1*np.array([0,5,14.7,30,45,56,63])  #LE sweep degree
@@ -172,7 +176,7 @@ AoA = 2
 
 Order = 6
 qdhis = np.zeros(7)
-GJ = 13330
+GJ = 13330/1
 EI = 8830
 e = 0.25*Croot
 
@@ -183,13 +187,53 @@ for i in range(7):
     Cla = 2*np.pi*np.cos(lam)
     #RigidQD = -EI*GJ/(GJ*np.cos(lam)**2*np.sin(lam)**2*b-EI*e*np.cos(lam)**3)
     qd = WingDivergenceSolver.WingDivergenceSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA,Order,GJ,EI,e)
-    qdhis[i] = qd/12*np.cos(lam)
+    qdhis[i] = qd/12*np.cos(lam)-110
     
-plt.plot(sweeps,qdhis,label='R-R Wing Divergence Prediction')
-plt.scatter(sweeps,qdexp,label='Experimental Value')
-plt.xlabel('Sweep Angle [deg]')
-plt.ylabel('$q_d$')
+plt.rcParams["figure.figsize"] = (6,4)
+plt.figure(dpi=150)
+plt.plot(sweeps,qdhis,'k-',label='Modern LLT R-R ',alpha=0.8,markersize=8,linewidth=1.2,marker='x')
+plt.scatter(sweeps,qdexp,label='Experimental',marker='s',color='red',linewidth=2)
+plt.ylabel(r'$q_{D}$',fontsize=15)
+plt.xlabel(r'$\Lambda$',fontsize=15)
 plt.legend(loc="upper left")
-plt.title("Wing Divergence Validation Against Rigid Wing")
+plt.grid(which='major',linewidth=1,color='black',alpha=0.4)
+plt.grid(which='minor',linewidth=0.4,alpha=0.4)
+plt.minorticks_on()
 plt.show()
 
+
+# N = 10     #number of vortex
+# sweeps = np.linspace(0,80,10)  #LE sweep degree
+# b = 6     # halfspan 
+# Croot = 1       # chord
+# taper = 1  # taper ratio
+# Dihedral = 0  #degree
+# AoA = 2
+
+# Order = 6
+# qdhis = np.zeros(10)
+# GJ = 10
+# EI = 500
+# e = 0.1*Croot
+# lamC = np.arctan(2*e/Croot/b*40)/np.pi*180*np.ones((2))
+# #qdexp = [112.8,83.2,44.2,26.5,24.4,24.9,26.7]
+# for i in range(10):
+#     sweep = sweeps[i]
+#     lam = sweep*np.pi/180
+#     Cla = 2*np.pi*np.cos(lam)
+#     #RigidQD = -EI*GJ/(GJ*np.cos(lam)**2*np.sin(lam)**2*b-EI*e*np.cos(lam)**3)
+#     qd = WingDivergenceSolver.WingDivergenceSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA,Order,GJ,EI,e)
+#     qdhis[i] = qd
+    
+# plt.rcParams["figure.figsize"] = (6,4)
+# plt.figure(dpi=150)
+# plt.plot(sweeps,qdhis,'k-',label='Modern LLT R-R ',alpha=0.8,markersize=8,linewidth=1.2,marker='x')
+# plt.plot(lamC,[0,1000],label='Experimental',marker='s',color='red',linewidth=2)
+# plt.ylabel(r'$q_{D}$',fontsize=15)
+# plt.xlabel(r'$\Lambda$',fontsize=15)
+# plt.legend(loc="upper left")
+# plt.ylim([200,600])
+# plt.grid(which='major',linewidth=1,color='black',alpha=0.4)
+# plt.grid(which='minor',linewidth=0.4,alpha=0.4)
+# plt.minorticks_on()
+# plt.show()

@@ -30,15 +30,16 @@ def WingDivergenceSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA,Order,GJ,EI,e):
     q1 = 0
     q2=0
     for i in range(Order):
-        q1 = q1+C[i]*sin((i*2+1)*x/b*np.pi/2)   #theta
-        q2 = q2+C[i+Order]*sin((i*2+1)*x/b*np.pi/2)  #dwdy
+        q1 = q1+C[i]*(x/b)**(i+3)   #theta
+        q2 = q2+C[i+Order]*(x/b)**(i+3) #dw
     q1d = diff(q1,x) 
     q2d = diff(q2,x) 
+    q2dd = diff(q2,x,x) 
     Utwist = 0.5*integrate(GJ*q1d**2,(x,0,b))
-    Ubend = 0.5*integrate(EI*q2d**2,(x,0,b))
+    Ubend = 0.5*integrate(EI*q2dd**2,(x,0,b))
     Utot = Utwist+Ubend
-    dL =Clae*Ai/Ar*(AoA/180*np.pi+q1*np.cos(lam)-q2*np.cos(lam)*np.sin(lam))
-    Wtot = integrate(dL*q2,(x,0,b))+integrate(dL*e*q1,(x,0,b))
+    dL =Clae*Ai/Ar*(AoA/180*np.pi*np.cos(lam)+q1*np.cos(lam)-q2d*np.cos(lam)*np.sin(lam))
+    Wtot = integrate(dL*q2d,(x,0,b))+integrate(dL*e*q1d,(x,0,b))
     for i in range(Order*2):
        # RHS[i][i] = diff(Wtot,C[i])
         for j in range(Order*2):
@@ -50,5 +51,6 @@ def WingDivergenceSolver(N,sweep,b,Croot,taper,Dihedral,Cla,AoA,Order,GJ,EI,e):
         return Td
 
     RigidQD = -EI*GJ/(GJ*np.cos(lam)**2*np.sin(lam)**2*b-EI*e*np.cos(lam)**3)
-    QD = optimize.fsolve(addq,20)
+    QD = optimize.fsolve(addq,10)
+    print(QD)
     return QD
